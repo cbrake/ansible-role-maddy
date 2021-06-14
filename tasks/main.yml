@@ -1,0 +1,47 @@
+- name: create maddy group
+  group:
+    name: maddy
+    state: present
+
+- name: create maddy user
+  user:
+    name: maddy
+    group: maddy
+    createhome: true
+
+- name: create needed dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: maddy
+  with_items:
+    - /etc/maddy
+
+- name: install zstd
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ["zstd", "unzip"]
+
+- name: fetch maddy
+  get_url:
+    url: "{{ maddy_url }}"
+    dest: /home/maddy/maddy.tar.zst
+  register: fetch
+
+- name: uncompress maddy
+  shell: |
+    cd /home/maddy
+    rm -rf maddy
+    tar -I zstd -xf maddy.tar.zst
+    mv maddy*musl maddy
+  when: fetch.changed
+
+- name: install maddy binaries
+  copy:
+    src: /home/maddy/maddy/{{ item }}
+    dest: /usr/local/bin/{{ item }}
+    mode: 0755
+    remote_src: true
+  with_items: ["maddy", "maddyctl"]
