@@ -1,21 +1,23 @@
 - name: create maddy group
   group:
-    name: maddy
+    name: "{{ maddy_user }}"
     state: present
 
 - name: create maddy user
   user:
-    name: maddy
-    group: maddy
+    name: "{{ maddy_user }}"
+    group: "{{ maddy_user }}"
     createhome: true
 
 - name: create needed dirs
   file:
     path: "{{ item }}"
     state: directory
-    owner: maddy
+    owner: "{{ maddy_user }}"
   with_items:
     - /etc/maddy
+    - /var/lib/maddy
+    - /run/maddy
 
 - name: install zstd
   package:
@@ -27,7 +29,7 @@
 - name: fetch maddy
   get_url:
     url: "{{ maddy_url }}"
-    dest: /home/maddy/maddy.tar.zst
+    dest: /home/{{ maddy_user }}/maddy.tar.zst
   register: fetch
 
 - name: uncompress maddy
@@ -45,3 +47,17 @@
     mode: 0755
     remote_src: true
   with_items: ["maddy", "maddyctl"]
+
+- name: maddy conf file
+  template: src=maddy.conf.j2 dest=/etc/maddy/maddy.conf
+  notify:
+    - restart maddy
+
+- name: maddy service file
+  template: src=maddy.service.j2 dest=/etc/systemd/system/maddy.service
+  notify:
+    - reload systemd maddy
+    - restart maddy
+
+- name: start/enable maddy
+  service: name=maddy state=started enabled=yes

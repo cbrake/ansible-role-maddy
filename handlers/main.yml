@@ -1,0 +1,5 @@
+- name: reload systemd maddy
+  command: systemctl daemon-reload
+
+- name: restart maddy
+  service: name=maddy state=restarted
