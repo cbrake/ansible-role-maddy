@@ -29,12 +29,12 @@
 - name: fetch maddy
   get_url:
     url: "{{ maddy_url }}"
-    dest: /home/{{ maddy_user }}/maddy.tar.zst
+    dest: "{{ maddy_user_dir }}/maddy.tar.zst"
   register: fetch
 
 - name: uncompress maddy
   shell: |
-    cd /home/maddy
+    cd "{{ maddy_user_dir }}"
     rm -rf maddy
     tar -I zstd -xf maddy.tar.zst
     mv maddy*musl maddy
@@ -42,7 +42,7 @@
 
 - name: install maddy binaries
   copy:
-    src: /home/maddy/maddy/{{ item }}
+    src: "{{ maddy_user_dir }}/maddy/{{ item }}"
     dest: /usr/local/bin/{{ item }}
     mode: 0755
     remote_src: true

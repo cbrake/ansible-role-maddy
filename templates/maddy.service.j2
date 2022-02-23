@@ -16,32 +16,39 @@ Group={{ maddy_user }}
 # in config will be relative to it unless handled specially.
 WorkingDirectory=/var/lib/maddy
 
+# we create dirs we need in systemd service, but perhaps we should
+# let systemd do it?
 #ConfigurationDirectory=maddy
 #RuntimeDirectory=maddy
 #StateDirectory=maddy
 #LogsDirectory=maddy
-#ReadOnlyPaths=/usr/lib/maddy
-#ReadWritePaths=/var/lib/maddy
+ReadOnlyPaths=/usr/local/bin/maddy
+# home dir is required for certs
+ReadOnlyPaths=/home/email
+ReadWritePaths=/var/lib/maddy
+ReadWritePaths=/run/maddy
 
 # Strict sandboxing. You have no reason to trust code written by strangers from GitHub.
-#PrivateTmp=true
+PrivateTmp=true
 #ProtectHome=true
-#ProtectSystem=strict
-#ProtectKernelTunables=true
-#ProtectHostname=true
-#ProtectControlGroups=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectHostname=true
+ProtectClock=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 
 # Additional sandboxing. You need to disable all of these options
 # for privileged helper binaries (for system auth) to work correctly.
-#NoNewPrivileges=true
-#PrivateDevices=true
-#DeviceAllow=/dev/syslog
-#RestrictSUIDSGID=true
-#ProtectKernelModules=true
-#MemoryDenyWriteExecute=true
-#RestrictNamespaces=false
-#RestrictRealtime=true
-#LockPersonality=true
+NoNewPrivileges=true
+PrivateDevices=true
+DeviceAllow=/dev/syslog
+RestrictSUIDSGID=true
+ProtectKernelModules=true
+MemoryDenyWriteExecute=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
 
 # Graceful shutdown with a reasonable timeout.
 TimeoutStopSec=7s
@@ -65,9 +72,9 @@ LimitNOFILE=131072
 LimitNPROC=512
 
 # Restart server on any problem.
-#Restart=on-failure
+Restart=on-failure
 # ... Unless it is a configuration problem.
-#RestartPreventExitStatus=2
+RestartPreventExitStatus=2
 
 ExecStart=/usr/local/bin/maddy
 
