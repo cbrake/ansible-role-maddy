@@ -168,7 +168,10 @@ target.remote outbound_delivery {
             fs_dir mtasts_cache/
         }
         local_policy {
-            min_tls_level encrypted
+            # BEC changed min tls from encrypted to none
+            # so we can send mail in clear text
+            # to broken mail servers -- sigh ...
+            min_tls_level none
             min_mx_level none
         }
     }
